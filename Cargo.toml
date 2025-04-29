@@ -1,0 +1,12 @@
+[package]
+name = "ican"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ic-agent = "0.40.0"
+tokio = {version = "1.41.1", features = ["rt-multi-thread", "macros"]}
+candid = "0.10.11"
+candid_parser = { version = "0.1.4", features = ["all"]}
+anyhow = "1.0.98"
+clap = { version = "4.4", features = ["derive"] }
