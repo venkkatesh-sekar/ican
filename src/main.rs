@@ -1,18 +1,17 @@
 use anyhow::{bail, Result};
 use candid::TypeEnv;
-use candid_parser::bindings::rust::{compile, Config};
 use candid_parser::bindings::rust::Target;
+use candid_parser::bindings::rust::{compile, Config};
 use candid_parser::check_prog;
+use clap::{Parser, ValueEnum};
 use ic_agent::export::Principal;
 use ic_agent::hash_tree::LookupResult;
 use ic_agent::identity::AnonymousIdentity;
 use ic_agent::Agent;
 use std::fs::File;
 use std::io::Write;
-use std::sync::Arc;
-use clap::{Parser, ValueEnum};
 use std::path::PathBuf;
-
+use std::sync::Arc;
 
 const DEFAULT_FILENAME: &str = "canister/def.rs";
 
@@ -42,7 +41,6 @@ struct Args {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-
     let args = Args::parse();
 
     let canister = Principal::from_text(&args.canister)?;
@@ -63,11 +61,16 @@ async fn main() -> Result<()> {
 
     let agent = get_agent().await;
     let result = get_canister_public_def(agent, canister, target).await?;
-    write_stream_to_file(path, result.clone());
+    let mut file = File::create(path)?;
+    file.write_all(result.as_bytes())?;
     Ok(())
 }
 
-async fn get_canister_public_def(agent: Arc<Agent>, canister_id: Principal, target: Target) -> Result<String> {
+async fn get_canister_public_def(
+    agent: Arc<Agent>,
+    canister_id: Principal,
+    target: Target,
+) -> Result<String> {
     let candid_path = vec![
         b"canister",
         canister_id.as_slice(),
@@ -97,21 +100,13 @@ async fn get_canister_public_def(agent: Arc<Agent>, canister_id: Principal, targ
     bail!("Unable to read state tree for canister {:?}", canister_id);
 }
 
-fn write_stream_to_file(name: PathBuf, data: String) {
-    let mut file = File::create(name).unwrap();
-    file.write_all(data.as_bytes()).unwrap();
-}
-
 async fn get_agent() -> Arc<Agent> {
-    let agent = Arc::new(
+    Arc::new(
         Agent::builder()
             .with_url("https://icp-api.io")
             .with_background_dynamic_routing()
             .with_identity(AnonymousIdentity)
             .build()
             .unwrap(),
-    );
-
-    agent.fetch_root_key().await.unwrap();
-    agent
+    )
 }
