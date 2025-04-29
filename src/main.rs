@@ -23,19 +23,19 @@ enum TargetType {
     Canister,
 }
 
-/// Generate canister type definitions in Rust on the fly
+/// Generate Rust type definitions for a canister on the fly
 #[derive(Parser, Debug)]
 #[command(author, version, about)]
 struct Args {
-    /// The canister whose types must be fetched
+    /// The canister principal to fetch type definitions for
     #[arg(short, long, required = true)]
     canister: String,
 
-    /// The definitions target
+    /// The output format for the type definitions
     #[arg(short, long, value_enum, default_value_t = TargetType::Agent)]
     target: TargetType,
 
-    /// Path to the store the generated types. Default is "canister/def.rs"
+    /// Path to store the generated types [default: canister/def.rs]
     #[arg(short, long)]
     path: Option<PathBuf>,
 }
